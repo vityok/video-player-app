@@ -39,6 +39,8 @@ protected:
 class OmxPlayerProxy : public VideoPlayerProxy {
 public:
   static const string PROG_NAME;
+
+  void launch_player(const string& fname) override;
 };
 
 // ------------------------------------------------------
@@ -56,18 +58,20 @@ public:
 /** Manages the video player proxy, gets notified if it is running or down. */
 class VideoPlayerManager {
 public:
-  VideoPlayerManager(VideoPlayerProxy* player);
+  VideoPlayerManager();
   ~VideoPlayerManager();
 
   /** Launch the video player application, normal playback. */
   void play_file(const string& fname);
   void pause();
   void resume();
+  void toggle_pause();
   /** Stop playback, kill the video player. */
   void stop();
 
 private:
   unique_ptr<VideoPlayerProxy> _player;
+  int state;
 };
 
 // ------------------------------------------------------
@@ -78,6 +82,9 @@ public:
   VideoPlayerAppWindow();
 
   void open_file_view(const Glib::RefPtr<Gio::File>& file);
+  bool on_key_press_event(GdkEventKey* event) override;
+private:
+  unique_ptr<VideoPlayerManager> _manager;
 };
 
 // ------------------------------------------------------
@@ -88,7 +95,6 @@ public:
  * single process. */
 class VideoPlayerApp : public Gtk::Application {
 public:
-  int run(int argc, char** argv);
 
   static Glib::RefPtr<VideoPlayerApp> create();
 
@@ -104,8 +110,6 @@ private:
   ~VideoPlayerApp();
   VideoPlayerApp(VideoPlayerApp const&) = delete;
   void operator=(VideoPlayerApp const&) = delete;
-
-  unique_ptr<VideoPlayerManager> _manager;
 
   VideoPlayerAppWindow* create_appwindow();
   void on_hide_window(Gtk::Window* window);
