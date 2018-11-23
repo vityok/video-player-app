@@ -11,7 +11,7 @@ VideoPlayerManager::VideoPlayerManager() :
 #ifdef APP_OS_RASPBIAN
   _player (std::unique_ptr<VideoPlayerProxy>(new OmxPlayerProxy())),
 #else
-  _player (std::unique_ptr<VideoPlayerProxy>(new MplayerProxy()));
+  _player (std::unique_ptr<VideoPlayerProxy>(new MplayerProxy())),
 #endif
   state (0)
 {
