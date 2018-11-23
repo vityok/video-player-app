@@ -21,16 +21,27 @@ public:
   virtual void launch_player(const string& fname) = 0;
   virtual ~VideoPlayerProxy();
 
+  virtual void pause() = 0;
+  virtual void resume() = 0;
+  virtual void toggle_pause() = 0;
+  /** Stop playback, kill the video player. */
+  virtual void stop() = 0;
+
 protected:
   VideoPlayerProxy() {};
 
   /** It is a function responsible for forking and executing the given
-      process with the given argument list.
-  */
+   * process with the given argument list.
+   */
   void spawn_process(const string& app, std::list<string>& args);
+
+  /** Send the given message via an output pipe to the child
+   *  process. */
+  void pipe_msg(const string& msg);
 
   int pipe_out[2];
   int pipe_in[2];
+  pid_t child_pid;
 };
 
 // ------------------------------------------------------
@@ -41,6 +52,12 @@ public:
   static const string PROG_NAME;
 
   void launch_player(const string& fname) override;
+  void pause() override;
+  void resume() override;
+  void toggle_pause() override;
+  /** Stop playback, kill the video player. */
+  void stop() override;
+
 };
 
 // ------------------------------------------------------

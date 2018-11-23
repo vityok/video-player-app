@@ -29,16 +29,20 @@ void VideoPlayerManager::play_file(const string& fname)
 
 void VideoPlayerManager::toggle_pause()
 {
+  _player->toggle_pause();
 }
 
 void VideoPlayerManager::pause()
 {
+  _player->pause();
 }
 
 void VideoPlayerManager::resume()
 {
+  _player->resume();
 }
 
 void VideoPlayerManager::stop()
 {
+  _player->stop();
 }

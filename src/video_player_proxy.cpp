@@ -15,6 +15,10 @@ using std::string;
 
 void VideoPlayerProxy::spawn_process(const string& prog, std::list<string>& args) {
 
+  // quick note from the man page:
+  //
+  // pipefd[0] refers to the read end of the pipe.
+  // pipefd[1] refers to the write end of the pipe.
   if (pipe(pipe_out)==-1) {
     std::cerr << "ERROR: pipe failed" << std::endl;
     return ;
@@ -24,12 +28,14 @@ void VideoPlayerProxy::spawn_process(const string& prog, std::list<string>& args
     return ;
   }
 
-  pid_t pid = fork();
-  if (pid < 0) {
+  child_pid = fork();
+  if (child_pid < 0) {
     std::cerr << "ERROR: fork failed" << std::endl;
     return;
-  } else if (pid > 0) {
+  } else if (child_pid > 0) {
     // parent process
+    std::cout<< "spawned process: " << prog << " pid=" << child_pid << std::endl;
+
     close(pipe_out[0]); // Close reading end of the output pipe
     close(pipe_in[1]); // Close writing end of input pipe
 
@@ -44,15 +50,14 @@ void VideoPlayerProxy::spawn_process(const string& prog, std::list<string>& args
     // read(pipe_in[0], concat_str, 100);
 
   } else {
-    // pid == 0, child process
+    // child_pid == 0, child process
+    close(pipe_out[1]); // writing end of the parent output pipe
+    close(pipe_in[0]); // reading end of parent input pipe
 
-    // redirect stdin and stdout to the pipes. explicitly close stdin
-    // and stdout here, and also use dup2 instead of dup so that not
-    // to use magic numbers for the file descriptors.
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    dup2(pipe_out[1], STDIN_FILENO);
-    dup2(pipe_in[0], STDOUT_FILENO);
+    // redirect stdin and stdout to the pipes. use dup2 instead of dup
+    // so that not to use magic numbers for the file descriptors.
+    dup2(pipe_out[0], STDIN_FILENO);
+    dup2(pipe_in[1], STDOUT_FILENO);
 
     int argc = args.size();
     // the arguments list must be NULL-terminated. The first arg
@@ -77,7 +82,26 @@ void VideoPlayerProxy::spawn_process(const string& prog, std::list<string>& args
   }
 }
 
-VideoPlayerProxy::~VideoPlayerProxy() {
+
+void VideoPlayerProxy::pipe_msg(const string& msg)
+{
+  int sent = write(pipe_out[1], msg.c_str(), msg.length());
+  if (sent < msg.length()) {
+    std::cerr << "VideoPlayerProxy::pipe_msg sent " << sent
+	      << " out of " << msg.length() << std::endl;
+  }
+}
+
+
+void VideoPlayerProxy::stop()
+{
   close(pipe_out[1]);
   close(pipe_in[0]);
+  kill(child_pid, SIGKILL);
+  std::cout << "VideoPlayerProxy::stop done" << std::endl;
+}
+
+
+VideoPlayerProxy::~VideoPlayerProxy() {
+  std::cout << "~VideoPlayerProxy: done" << std::endl;
 }
