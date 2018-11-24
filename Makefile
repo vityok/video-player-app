@@ -8,7 +8,7 @@ else
 APP_OS=APP_OS_OTHER
 endif
 
-CXX_FLAGS=-std=c++14 -Wall -Wextra -g
+CXX_FLAGS=-std=c++14 -Wall -Wextra -pedantic -g
 CPP_FLAGS=-D$(APP_OS) -Iinc/ $(shell pkg-config gtkmm-3.0 --cflags)
 
 LD_FLAGS=$(shell pkg-config gtkmm-3.0 --libs)

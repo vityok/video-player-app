@@ -1,4 +1,3 @@
-#include <giomm.h>
 #include <glibmm.h>
 
 #include <iostream>
@@ -9,52 +8,7 @@
 
 using std::string;
 
-// root: org.mpris.MediaPlayer2
-
-// Player Interface
-
-// The player interface is accessible under the name
-// org.mpris.MediaPlayer2.Player
-
-// Methods
-
-// Player interface methods can be accessed through
-// org.mpris.MediaPlayer2.Player.MethodName
-
-
-
 const string OmxPlayerProxy::PROG_NAME = "omxplayer";
-
-// A callback to finish creating a DBus::Proxy that was asynchronously created
-// for the user session's bus and then try to call the well known 'ListNames'
-// method.
-void
-on_dbus_proxy_available(Glib::RefPtr<Gio::AsyncResult>& result)
-{
-  const auto proxy = Gio::DBus::Proxy::create_finish(result);
-
-  if (!proxy) {
-    std::cerr <<
-      "The proxy to the user's session bus was not successfully "
-      "created."
-	      << std::endl;
-    // loop->quit();
-    return;
-  }
-
-  try {
-    // The proxy's call method returns a tuple of the value(s) that the method
-    // call produces so just get the tuple as a VariantContainerBase.
-    proxy->call_sync("Pause");
-
-  } catch (const Glib::Error& error) {
-    std::cerr << "Got an error: '" << error.what() << "'." << std::endl;
-  }
-
-  // Connect an idle callback to the main loop to quit when the main loop is
-  // idle now that the method call is finished.
-  // Glib::signal_idle().connect(sigc::ptr_fun(&on_main_loop_idle));
-}
 
 
 // todo: it might be more convenient and reasonable to use the DBus
@@ -75,6 +29,13 @@ on_dbus_proxy_available(Glib::RefPtr<Gio::AsyncResult>& result)
 // And a tutorial at:
 //
 // https://dbus.freedesktop.org/doc/dbus-tutorial.html
+//
+// However, interacting "old school" style via pipes appears to be
+// much easier to implement and also more reliable and doesn't impose
+// requirement to get into DBus programming.
+//
+// So, sticking with the pipes for a while until DBus stuff is sorted
+// out.
 void OmxPlayerProxy::launch_player(const string& fname)
 {
   std::cout << "omxplayer::launch_player" << std::endl;
@@ -83,24 +44,34 @@ void OmxPlayerProxy::launch_player(const string& fname)
 
   spawn_process(PROG_NAME, args);
 
-  auto connection = Gio::DBus::Connection::get_sync(Gio::DBus::BusType::BUS_TYPE_SESSION);
-
-  // Check for an unavailable connection.
-  if (!connection) {
-    std::cerr << "The user's session bus is not available." << std::endl;
-    return;
-  }
-  sleep(2);
-
-  // Create the proxy to the bus asynchronously.
-
-  Gio::DBus::Proxy::create(connection,
-			   "org.mpris.MediaPlayer2",
-			   "/org/mpris/MediaPlayer2",
-			   "org.mpris.MediaPlayer2.Player",
-			   sigc::ptr_fun(&on_dbus_proxy_available));
-
 }
+
+// Key bindings to control omxplayer while playing:
+
+// 1           decrease speed
+// 2           increase speed
+// <           rewind
+// >           fast forward
+// z           show info
+// j           previous audio stream
+// k           next audio stream
+// i           previous chapter
+// o           next chapter
+// n           previous subtitle stream
+// m           next subtitle stream
+// s           toggle subtitles
+// w           show subtitles
+// x           hide subtitles
+// d           decrease subtitle delay (- 250 ms)
+// f           increase subtitle delay (+ 250 ms)
+// q           exit omxplayer
+// p / space   pause/resume
+// -           decrease volume
+// + / =       increase volume
+// left arrow  seek -30 seconds
+// right arrow seek +30 seconds
+// down arrow  seek -600 seconds
+// up arrow    seek +600 seconds
 
 
 void OmxPlayerProxy::pause()
@@ -124,11 +95,17 @@ void OmxPlayerProxy::toggle_pause()
   // Toggles the play state. If the video is playing, it will be
   // paused, if it is paused it will start playing.
 
-  std::cout << "OmxPlayerProxy::toggle_pause" << std::endl;
-
   pipe_msg("p");
 }
 
+/*
+void OmxPlayerProxy::stop()
+{
+  pipe_msg("q");
+
+}
+
+*/
 
 void OmxPlayerProxy::stop()
 {

@@ -85,10 +85,17 @@ void VideoPlayerProxy::spawn_process(const string& prog, std::list<string>& args
 
 void VideoPlayerProxy::pipe_msg(const string& msg)
 {
-  int sent = write(pipe_out[1], msg.c_str(), msg.length());
-  if (sent < msg.length()) {
+  ssize_t msg_size = msg.length();
+  int sent = write(pipe_out[1], msg.c_str(), msg_size);
+  if (sent < 0) {
+    std::cerr << "VideoPlayerProxy::pipe_msg ERROR sent " << sent
+	      << " out of " << msg_size << std::endl;
+  } else if (sent == 0) {
+    std::cerr << "VideoPlayerProxy::pipe_msg nothing sent out of "
+	      << msg_size << std::endl;
+  } else if (sent < msg_size) {
     std::cerr << "VideoPlayerProxy::pipe_msg sent " << sent
-	      << " out of " << msg.length() << std::endl;
+	      << " out of " << msg_size << std::endl;
   }
 }
 
