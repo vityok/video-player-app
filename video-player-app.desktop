@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Video Player App
+GenericName=Video Player App
+Comment=A simple GUI for the OMX video Player
+Icon=exampleapp
+StartupNotify=true
+Exec=video-player-app %U
+Categories=GNOME;GTK;Utility
