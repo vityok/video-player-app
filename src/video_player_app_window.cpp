@@ -34,9 +34,19 @@ bool VideoPlayerAppWindow::on_key_press_event(GdkEventKey* key_event)
     return true;
   } else if (key_event->keyval == GDK_KEY_Left) {
     // step back
+    _manager->seek_back_some();
     return true;
   } else if (key_event->keyval == GDK_KEY_Right) {
+    _manager->seek_some();
     // step right
+    return true;
+  } else if (key_event->keyval == GDK_KEY_Up) {
+    // step back
+    _manager->seek_many();
+    return true;
+  } else if (key_event->keyval == GDK_KEY_Down) {
+    // step back
+    _manager->seek_back_many();
     return true;
   } else if (key_event->keyval == GDK_KEY_Escape
 	     || key_event->keyval == GDK_KEY_q) {

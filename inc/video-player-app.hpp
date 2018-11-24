@@ -27,6 +27,15 @@ public:
   /** Stop playback, kill the video player. */
   virtual void stop() = 0;
 
+  // seek forward 30 seconds
+  virtual void seek_some() = 0;
+  // seek forward 600 seconds
+  virtual void seek_many() = 0;
+  // seek backwards 30 seconds
+  virtual void seek_back_some() = 0;
+  // seek backwards 600 seconds
+  virtual void seek_back_many() = 0;
+
 protected:
   VideoPlayerProxy() {};
 
@@ -57,7 +66,10 @@ public:
   void toggle_pause() override;
   /** Stop playback, kill the video player. */
   void stop() override;
-
+  void seek_some();
+  void seek_many();
+  void seek_back_some();
+  void seek_back_many();
 };
 
 // ------------------------------------------------------
@@ -85,6 +97,10 @@ public:
   void toggle_pause();
   /** Stop playback, kill the video player. */
   void stop();
+  void seek_some();
+  void seek_many();
+  void seek_back_some();
+  void seek_back_many();
 
 private:
   unique_ptr<VideoPlayerProxy> _player;

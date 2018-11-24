@@ -90,31 +90,34 @@ void OmxPlayerProxy::resume()
 
 void OmxPlayerProxy::toggle_pause()
 {
-  // DBus player method: PlayPause
-
-  // Toggles the play state. If the video is playing, it will be
-  // paused, if it is paused it will start playing.
-
   pipe_msg("p");
 }
 
-/*
-void OmxPlayerProxy::stop()
+// hex codes borrowed from the TBO Player sources
+void OmxPlayerProxy::seek_some()
 {
-  pipe_msg("q");
-
+  pipe_msg("\x1b\x5b\x43");
 }
 
-*/
+void OmxPlayerProxy::seek_back_some()
+{
+  pipe_msg("\x1b\x5b\x44");
+}
+
+void OmxPlayerProxy::seek_many()
+{
+  pipe_msg("\x1b\x5b\x42");
+}
+
+void OmxPlayerProxy::seek_back_many()
+{
+  pipe_msg("\x1b\x5b\x41");
+}
 
 void OmxPlayerProxy::stop()
 {
   pipe_msg("q");
   this->VideoPlayerProxy::stop();
-  // DBus player method: Stop
-
-  // Stops the video. This has the same effect as Quit (terminates the
-  // omxplayer instance).
 }
 
 

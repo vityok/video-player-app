@@ -46,3 +46,23 @@ void VideoPlayerManager::stop()
 {
   _player->stop();
 }
+
+void VideoPlayerManager::seek_some()
+{
+  _player->seek_some();
+}
+
+void VideoPlayerManager::seek_back_some()
+{
+  _player->seek_back_some();
+}
+
+void VideoPlayerManager::seek_many()
+{
+  _player->seek_many();
+}
+
+void VideoPlayerManager::seek_back_many()
+{
+  _player->seek_back_many();
+}
