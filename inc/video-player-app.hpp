@@ -66,10 +66,10 @@ public:
   void toggle_pause() override;
   /** Stop playback, kill the video player. */
   void stop() override;
-  void seek_some();
-  void seek_many();
-  void seek_back_some();
-  void seek_back_many();
+  void seek_some() override;
+  void seek_many() override;
+  void seek_back_some() override;
+  void seek_back_many() override;
 };
 
 // ------------------------------------------------------
@@ -80,6 +80,15 @@ public:
   static const string PROG_NAME;
 
   void launch_player(const string& fname) override;
+  void pause() override;
+  void resume() override;
+  void toggle_pause() override;
+  /** Stop playback, kill the video player. */
+  void stop() override;
+  void seek_some() override;
+  void seek_many() override;
+  void seek_back_some() override;
+  void seek_back_many() override;
 };
 
 // ------------------------------------------------------

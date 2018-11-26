@@ -63,8 +63,8 @@ void VideoPlayerProxy::spawn_process(const string& prog, std::list<string>& args
     // the arguments list must be NULL-terminated. The first arg
     // (arg0) by convention should contain the name of the program to
     // be executed. therefore we've got two more elements in the args
-    // array for exec
-    char* argv[argc+2];
+    // array for exec than the number of given parameters
+    char** argv = (char**) calloc (argc+2, sizeof(char*));
 
     argv[0] = strdup(prog.c_str());
 
