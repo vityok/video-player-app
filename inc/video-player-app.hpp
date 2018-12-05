@@ -6,6 +6,7 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <thread>
 
 using std::string;
 using std::unique_ptr;
@@ -27,9 +28,9 @@ public:
   /** Stop playback, kill the video player. */
   virtual void stop() = 0;
 
-  // seek forward 30 seconds
+  /** seek forward 30 seconds. */
   virtual void seek_some() = 0;
-  // seek forward 600 seconds
+  /** Seek forward 600 seconds. */
   virtual void seek_many() = 0;
   // seek backwards 30 seconds
   virtual void seek_back_some() = 0;
@@ -39,14 +40,21 @@ public:
 protected:
   VideoPlayerProxy() {};
 
-  /** It is a function responsible for forking and executing the given
-   * process with the given argument list.
-   */
+  /** Responsible for forking and executing the given
+   * process with the given argument list. */
   void spawn_process(const string& app, std::list<string>& args);
+
+  /** Background thread object responsible for monitoring spawned
+   *  child process state. */
+  std::unique_ptr<std::thread> monitor_thread = nullptr;
 
   /** Send the given message via an output pipe to the child
    *  process. */
   void pipe_msg(const string& msg);
+
+  /** This method is called from a background thread. It waits for the
+      spawned child process to terminate. */
+  void wait_child();
 
   int pipe_out[2];
   int pipe_in[2];

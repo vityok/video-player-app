@@ -21,6 +21,18 @@ Depends on gtkmm library version 3.0 or higher. To install run:
 If you are building on a Ubuntu (might even work on Debian) or
 Raspbian system.
 
+What it does
+------------
+
+This is a tiny GTK-based application that does its best to launch the
+actual OMX Player application in a background process.
+
+It also creates a window in the window manager so that it can
+intercept keypresses and relay them to the running omxplayer process.
+
+Thus, it becomes possible to associate video file types with this
+application for convenient video playback right from the file browser.
+
 Links
 -----
 

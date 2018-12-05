@@ -2,12 +2,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <string.h>
 #include <sys/wait.h>
+#include <string.h>
 
 #include <iostream>
 #include <list>
 #include <string>
+#include <thread>
 
 #include "video-player-app.hpp"
 
@@ -39,16 +40,9 @@ void VideoPlayerProxy::spawn_process(const string& prog, std::list<string>& args
     close(pipe_out[0]); // Close reading end of the output pipe
     close(pipe_in[1]); // Close writing end of input pipe
 
-    // we don't have to dup the stdin and stdout here, unlike in the
-    // child process, because we are aware of the pipes and can
-    // read-write to the directly.
-
-    // Write input string
-    // write(pipe_out[1], input_str, strlen(input_str)+1);
-
-    // Read string from child
-    // read(pipe_in[0], concat_str, 100);
-
+    // launch background thread waiting for the child process to exit
+    // (change state)
+    monitor_thread.reset(new std::thread(&VideoPlayerProxy::wait_child, this));
   } else {
     // child_pid == 0, child process
     close(pipe_out[1]); // writing end of the parent output pipe
@@ -99,6 +93,29 @@ void VideoPlayerProxy::pipe_msg(const string& msg)
   }
 }
 
+
+void VideoPlayerProxy::wait_child()
+{
+  std::cout << "waiting for child to exit" << std::endl;
+  int status;
+  do {
+    int w = waitpid(child_pid, &status, WUNTRACED | WCONTINUED);
+    if (w == -1) {
+      perror("waitpid");
+      exit(EXIT_FAILURE);
+    }
+
+    if (WIFEXITED(status)) {
+      printf("exited, status=%d\n", WEXITSTATUS(status));
+    } else if (WIFSIGNALED(status)) {
+      printf("killed by signal %d\n", WTERMSIG(status));
+    } else if (WIFSTOPPED(status)) {
+      printf("stopped by signal %d\n", WSTOPSIG(status));
+    } else if (WIFCONTINUED(status)) {
+      printf("continued\n");
+    }
+  } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+}
 
 void VideoPlayerProxy::stop()
 {

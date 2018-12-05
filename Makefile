@@ -8,10 +8,10 @@ else
 APP_OS=APP_OS_OTHER
 endif
 
-CXX_FLAGS=-std=c++14 -Wall -Wextra -pedantic -g
+CXX_FLAGS=-std=c++14 -Wall -Wextra -pedantic
 CPP_FLAGS=-D$(APP_OS) -Iinc/ $(shell pkg-config gtkmm-3.0 --cflags)
 
-LD_FLAGS=$(shell pkg-config gtkmm-3.0 --libs)
+LD_FLAGS=$(shell pkg-config gtkmm-3.0 --libs) -lpthread
 
 BINARY=video-player-app
 
