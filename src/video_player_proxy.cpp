@@ -43,6 +43,7 @@ void VideoPlayerProxy::spawn_process(const string& prog, std::list<string>& args
     // launch background thread waiting for the child process to exit
     // (change state)
     monitor_thread.reset(new std::thread(&VideoPlayerProxy::wait_child, this));
+    monitor_thread->detach();
   } else {
     // child_pid == 0, child process
     close(pipe_out[1]); // writing end of the parent output pipe
@@ -110,7 +111,7 @@ void VideoPlayerProxy::wait_child()
 
     if (WIFEXITED(status)) {
       const int exit_status = WEXITSTATUS(status);
-      printf("exited, status=%d\n", exit_status);
+      std::cout << "exited, status=" << exit_status << std::endl;
       for (AVideoPlayerStatusListener& listener : _video_player_status_listeners) {
 	listener.handle_exited(exit_status);
       }

@@ -151,12 +151,16 @@ class VideoPlayerAppWindow :
 {
 public:
   VideoPlayerAppWindow();
+  ~VideoPlayerAppWindow();
 
   void open_file_view(const Glib::RefPtr<Gio::File>& file);
   bool on_key_press_event(GdkEventKey* event) override;
+  void on_player_exited();
   void handle_exited(int exit_status) override;
+
 private:
   unique_ptr<VideoPlayerManager> _manager;
+  Glib::Dispatcher _dispatcher;
 };
 
 // ------------------------------------------------------

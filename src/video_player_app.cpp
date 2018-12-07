@@ -15,6 +15,7 @@ VideoPlayerApp::VideoPlayerApp() :
 }
 
 VideoPlayerApp::~VideoPlayerApp() {
+  std::cout << "VideoPlayerApp::~VideoPlayerApp" << std::endl;
 }
 
 

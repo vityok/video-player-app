@@ -12,9 +12,17 @@ using std::unique_ptr;
 
 VideoPlayerAppWindow::VideoPlayerAppWindow()
   : Gtk::ApplicationWindow(),
-    _manager(unique_ptr<VideoPlayerManager>(new VideoPlayerManager()))
+    _manager(unique_ptr<VideoPlayerManager>(new VideoPlayerManager())),
+    _dispatcher()
 {
   _manager->add_video_player_status_listener(*this);
+  _dispatcher.connect(sigc::mem_fun(*this, &VideoPlayerAppWindow::on_player_exited));
+
+}
+
+VideoPlayerAppWindow::~VideoPlayerAppWindow()
+{
+  std::cout << "VideoPlayerAppWindow::~VideoPlayerAppWindow" << std::endl;
 }
 
 
@@ -27,10 +35,18 @@ void VideoPlayerAppWindow::open_file_view(const Glib::RefPtr<Gio::File>& file)
 
 void VideoPlayerAppWindow::handle_exited(int exit_status)
 {
-  std::cout << "video player exited with status: " << exit_status << std::endl;
-  hide();
+  // this method is called from a background monitoring thread, use
+  // Glib::dispatcher to relay it to the GUI thread
+  // 
+  std::cout << "VideoPlayerAppWindow::handle_exited: status: " << exit_status << std::endl;
+  _dispatcher.emit();
 }
 
+void VideoPlayerAppWindow::on_player_exited()
+{
+  _manager->stop();
+  hide();
+}
 
 bool VideoPlayerAppWindow::on_key_press_event(GdkEventKey* key_event)
 {
