@@ -16,7 +16,7 @@ using std::string;
 
 void VideoPlayerProxy::spawn_process(const string& prog, std::list<string>& args) {
 
-  // quick note from the man page:
+  // quick note from the pipe(2) man page:
   //
   // pipefd[0] refers to the read end of the pipe.
   // pipefd[1] refers to the write end of the pipe.
@@ -54,6 +54,7 @@ void VideoPlayerProxy::spawn_process(const string& prog, std::list<string>& args
     dup2(pipe_in[1], STDOUT_FILENO);
 
     int argc = args.size();
+
     // the arguments list must be NULL-terminated. The first arg
     // (arg0) by convention should contain the name of the program to
     // be executed. therefore we've got two more elements in the args
@@ -73,6 +74,8 @@ void VideoPlayerProxy::spawn_process(const string& prog, std::list<string>& args
     if (execvp(prog.c_str(), argv) < 0) {
       std::cerr << "failed to execute player program" << std::endl;
     }
+    // at this moment child process should be replaced by the
+    // specified executable
   }
 }
 
@@ -101,12 +104,16 @@ void VideoPlayerProxy::wait_child()
   do {
     int w = waitpid(child_pid, &status, WUNTRACED | WCONTINUED);
     if (w == -1) {
-      perror("waitpid");
+      std::cerr << "waitpid" << std::endl;
       exit(EXIT_FAILURE);
     }
 
     if (WIFEXITED(status)) {
-      printf("exited, status=%d\n", WEXITSTATUS(status));
+      const int exit_status = WEXITSTATUS(status);
+      printf("exited, status=%d\n", exit_status);
+      for (AVideoPlayerStatusListener& listener : _video_player_status_listeners) {
+	listener.handle_exited(exit_status);
+      }
     } else if (WIFSIGNALED(status)) {
       printf("killed by signal %d\n", WTERMSIG(status));
     } else if (WIFSTOPPED(status)) {
@@ -125,6 +132,11 @@ void VideoPlayerProxy::stop()
   std::cout << "VideoPlayerProxy::stop done" << std::endl;
 }
 
+
+void VideoPlayerProxy::add_video_player_status_listener(AVideoPlayerStatusListener& listener)
+{
+  _video_player_status_listeners.push_front(listener);
+}
 
 VideoPlayerProxy::~VideoPlayerProxy() {
   std::cout << "~VideoPlayerProxy: done" << std::endl;

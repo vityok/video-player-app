@@ -3,6 +3,7 @@
 
 #include <gtkmm.h>
 
+#include <functional>
 #include <list>
 #include <memory>
 #include <string>
@@ -10,6 +11,18 @@
 
 using std::string;
 using std::unique_ptr;
+
+/** Interface for video player process status change listeners. */
+class AVideoPlayerStatusListener {
+public:
+
+  virtual ~AVideoPlayerStatusListener () = default;
+
+  /** Receive notifications for when the video player process exits. */
+  virtual void handle_exited(int exit_status) = 0;
+
+};
+
 
 /** A proxy responsible for launching the video player application and
  *  interfacing with it via pipes.
@@ -36,6 +49,7 @@ public:
   virtual void seek_back_some() = 0;
   // seek backwards 600 seconds
   virtual void seek_back_many() = 0;
+  void add_video_player_status_listener(AVideoPlayerStatusListener& listener);
 
 protected:
   VideoPlayerProxy() {};
@@ -59,6 +73,9 @@ protected:
   int pipe_out[2];
   int pipe_in[2];
   pid_t child_pid;
+
+private:
+  std::list<std::reference_wrapper<AVideoPlayerStatusListener>> _video_player_status_listeners = {};
 };
 
 // ------------------------------------------------------
@@ -119,6 +136,8 @@ public:
   void seek_back_some();
   void seek_back_many();
 
+  void add_video_player_status_listener(AVideoPlayerStatusListener& listener);
+
 private:
   unique_ptr<VideoPlayerProxy> _player;
   int state;
@@ -126,13 +145,16 @@ private:
 
 // ------------------------------------------------------
 
-class VideoPlayerAppWindow : public Gtk::ApplicationWindow
+class VideoPlayerAppWindow :
+  public Gtk::ApplicationWindow,
+  public AVideoPlayerStatusListener
 {
 public:
   VideoPlayerAppWindow();
 
   void open_file_view(const Glib::RefPtr<Gio::File>& file);
   bool on_key_press_event(GdkEventKey* event) override;
+  void handle_exited(int exit_status) override;
 private:
   unique_ptr<VideoPlayerManager> _manager;
 };

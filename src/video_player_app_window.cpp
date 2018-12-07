@@ -14,6 +14,7 @@ VideoPlayerAppWindow::VideoPlayerAppWindow()
   : Gtk::ApplicationWindow(),
     _manager(unique_ptr<VideoPlayerManager>(new VideoPlayerManager()))
 {
+  _manager->add_video_player_status_listener(*this);
 }
 
 
@@ -21,6 +22,13 @@ void VideoPlayerAppWindow::open_file_view(const Glib::RefPtr<Gio::File>& file)
 {
   std::cout << "opening file: " << file->get_path() << std::endl;
   _manager->play_file(file->get_path());
+}
+
+
+void VideoPlayerAppWindow::handle_exited(int exit_status)
+{
+  std::cout << "video player exited with status: " << exit_status << std::endl;
+  hide();
 }
 
 

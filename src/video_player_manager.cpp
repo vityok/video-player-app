@@ -66,3 +66,8 @@ void VideoPlayerManager::seek_back_many()
 {
   _player->seek_back_many();
 }
+
+void VideoPlayerManager::add_video_player_status_listener(AVideoPlayerStatusListener& listener)
+{
+  _player->add_video_player_status_listener(listener);
+}
