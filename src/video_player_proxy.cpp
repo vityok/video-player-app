@@ -41,8 +41,7 @@ void VideoPlayerProxy::spawn_process(const string& prog, std::list<string>& args
     close(pipe_in[1]); // Close writing end of input pipe
 
     // launch background thread waiting for the child process to exit
-    // (change state)
-    monitor_thread.reset(new std::thread(&VideoPlayerProxy::wait_child, this));
+    monitor_thread = std::make_unique<std::thread>(&VideoPlayerProxy::wait_child, this);
     monitor_thread->detach();
   } else {
     // child_pid == 0, child process
