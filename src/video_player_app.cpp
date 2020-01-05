@@ -6,9 +6,6 @@
 
 #include "video-player-app.hpp"
 
-using std::string;
-using std::unique_ptr;
-
 VideoPlayerApp::VideoPlayerApp() :
   Gtk::Application("org.bb.vityok.videoplayerapp", Gio::APPLICATION_HANDLES_OPEN)
 {
@@ -66,7 +63,7 @@ void VideoPlayerApp::on_open(const Gio::Application::type_vec_files& files,
   if (windows.size() > 0)
     appwindow = dynamic_cast<VideoPlayerAppWindow*>(windows[0]);
 
-  if (!appwindow) {
+  if (appwindow == nullptr) {
     appwindow = create_appwindow();
   }
   appwindow->present();
@@ -74,7 +71,6 @@ void VideoPlayerApp::on_open(const Gio::Application::type_vec_files& files,
   for (const auto& file : files) {
     appwindow->open_file_view(file);
   }
-
 }
 
 
